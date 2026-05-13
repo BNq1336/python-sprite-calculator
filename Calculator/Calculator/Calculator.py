@@ -1,5 +1,5 @@
-from sqlite3.dbapi2 import Timestamp
 import pygame
+import re
 
 pygame.init()
 
@@ -11,9 +11,9 @@ BLACK = (0,0,0)
 WHITE = (254,255,250)
 
 calculation = ""
-operators = "+-/*%"
+operators = ".+/*-"
 
-font = pygame.font.SysFont(None, 50)
+font = pygame.font.SysFont("bahnschrift", 50)
 
 class Button:
    
@@ -42,14 +42,36 @@ class Button:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if self.rect.collidepoint(event.pos):
                 try:
-                    if self.text == "C":
-                        calculation = ""                 
+
+                    if self.text == "C" or calculation == "Can't divide by 0":
+                        calculation = ""
+
                     elif self.text == "=":
-                        calculation = str(eval(calculation))
+                        if len(calculation) == 0 or calculation[-1] in operators:
+                            return calculation
+                        calculation = str(eval(calculation))[:13]
+
+                    elif len(calculation) == 0 and self.text in operators and self.text != "-":
+                        return calculation
+
+                    elif self.text == ".":
+                        last_number = re.split(r"[+-/*]", calculation)[-1]
+                        if "." in last_number:
+                            return calculation
+                        calculation += self.text
+
+                    elif len(calculation) > 0 and calculation[-1] in operators and self.text in operators:
+                        return calculation
+
+                    elif len(calculation) > 13:
+                        calculation = calculation[:13]
+
                     else:
                         calculation += self.text
-                except:
-                    calculation = "Error"
+
+                except ZeroDivisionError:
+                    calculation = "Can't divide by 0"
+
         return calculation
                 
 button_data = [
@@ -67,7 +89,6 @@ button_data = [
     ("-", 350, 400, 80, 80),
     ("/", 350, 300, 80, 80),
     ("*", 350, 200, 80, 80),
-    ("%", 250, 200, 80, 80),
     ("=", 250, 600, 180, 80),
     ("C", 50, 200, 180, 80),
     (".", 50, 600, 80, 80)
@@ -97,7 +118,7 @@ while running:
 
     pygame.draw.rect(screen, WHITE,(50, 50, 380, 100), border_radius=10)
     calculation_surface = font.render(calculation, True, BLACK)
-    screen.blit(calculation_surface, (80, 85))
+    screen.blit(calculation_surface, (50, 80))
 
     for button in buttons:
         button.button_draw()
