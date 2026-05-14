@@ -3,29 +3,44 @@ import re
 
 pygame.init()
 
-screen = pygame.display.set_mode((480,700))
+screen = pygame.display.set_mode((800,1100))
 pygame.display.set_caption("Helluva calculator")
 
-RED = (216,41,50)
 BLACK = (0,0,0)
 WHITE = (254,255,250)
 
 calculation = ""
 operators = ".+/*-"
 
-font = pygame.font.SysFont("bahnschrift", 50)
+font = pygame.font.Font("PressStart2P-Regular.ttf", 40)
+
+background = pygame.image.load("background.png").convert_alpha()
+background = pygame.transform.scale(background, (800,1100))
+
+button_img = pygame.image.load("button.png").convert_alpha()
+button_img = pygame.transform.scale(button_img, (100,100))
+
+button_hov_img = pygame.image.load("button_hov.png").convert_alpha()
+button_hov_img = pygame.transform.scale(button_hov_img, (100,100))
 
 class Button:
    
-    def __init__(self, screen, color, x, y, width, height, text):
-        self.color = color
+    def __init__(self, x, y, width, height, text):
         self.text = text
         self.rect = pygame.Rect(x, y, width, height)
-    
+
+        self.image = button_img 
+        self.hover_image = button_hov_img
+
+        self.current_image = self.image
+
     def button_draw(self):
-        pygame.draw.rect(screen, self.color, self.rect, border_radius=15)
+        if self.text == "C":
+            self.current_image = pygame.transform.scale(self.current_image, (230,100))
+
+        screen.blit(self.current_image, self.rect)
         
-        button_inside = font.render(self.text, True, (254,255,250))
+        button_inside = font.render(self.text, False, (255,240,195))
         button_inside_rect = button_inside.get_rect(center=self.rect.center)
 
         screen.blit(button_inside, button_inside_rect)
@@ -34,9 +49,9 @@ class Button:
         mouse_pos = pygame.mouse.get_pos()
 
         if self.rect.collidepoint(mouse_pos):
-            self.color = (44,42,54)
+            self.current_image = self.hover_image
         else:
-            self.color = (0,0,0)
+            self.current_image = self.image
 
     def click(self, event, calculation, operators):
         if event.type == pygame.MOUSEBUTTONDOWN:
@@ -62,9 +77,9 @@ class Button:
 
                     elif len(calculation) > 0 and calculation[-1] in operators and self.text in operators:
                         return calculation
-
-                    elif len(calculation) > 13:
-                        calculation = calculation[:13]
+                    
+                    elif len(calculation) >= 13:
+                        return calculation
 
                     else:
                         calculation += self.text
@@ -75,37 +90,33 @@ class Button:
         return calculation
                 
 button_data = [
-    ("1", 50, 500, 80, 80),
-    ("2", 150, 500, 80, 80),
-    ("3", 250, 500, 80, 80),
-    ("4", 50, 400, 80, 80),
-    ("5", 150, 400, 80, 80),
-    ("6", 250, 400, 80, 80),
-    ("7", 50, 300, 80, 80),
-    ("8", 150, 300, 80, 80),
-    ("9", 250, 300, 80, 80),
-    ("0", 150, 600, 80, 80),
-    ("+", 350, 500, 80, 80),
-    ("-", 350, 400, 80, 80),
-    ("/", 350, 300, 80, 80),
-    ("*", 350, 200, 80, 80),
-    ("=", 250, 600, 180, 80),
-    ("C", 50, 200, 180, 80),
-    (".", 50, 600, 80, 80)
+    ("1", 170, 750, 110,105),
+    ("2", 300, 750, 110,105),
+    ("3", 430, 750, 110,105),
+    ("4", 170, 650, 110,105),
+    ("5", 300, 650, 110,105),
+    ("6", 430, 650, 110,105),
+    ("7", 170, 550, 110,105),
+    ("8", 300, 550, 110,105),
+    ("9", 430, 550, 110,105),
+    ("0", 300, 850, 110,105),
+    ("+", 560, 750, 110,105),
+    ("-", 560, 550, 110,105),
+    ("/", 560, 650, 110,105),
+    ("*", 560, 450, 110,105),
+    ("=", 430, 850, 110,105),
+    ("C", 300, 450, 240,105),
+    (".", 170, 850, 110,105)
 ]
 
 buttons = []
 
 for text, x, y, width, height in button_data:
-    button = Button(screen, BLACK, x, y, width, height, text)
-    buttons.append(button)
+    buttons.append(Button(x, y, width, height, text))
 
 running = True
 
 while running:
-
-    for button in buttons:
-        button.hover()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -114,13 +125,13 @@ while running:
         for button in buttons:
             calculation = button.click(event, calculation, operators)
 
-    screen.fill(RED)
+    screen.blit(background,(0,0))
 
-    pygame.draw.rect(screen, WHITE,(50, 50, 380, 100), border_radius=10)
-    calculation_surface = font.render(calculation, True, BLACK)
-    screen.blit(calculation_surface, (50, 80))
+    calculation_surface = font.render(calculation, False, BLACK)
+    screen.blit(calculation_surface, (130, 270))
 
     for button in buttons:
+        button.hover()
         button.button_draw()
 
     pygame.display.update()
