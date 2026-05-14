@@ -19,5 +19,4 @@ Projekt zawiera podstawowe działania matematyczne oraz prosty interfejs graficz
 
 ## Plany na przyszłość
 
-* Dodanie sprite'ów i lepszego UI
-* Animacje przycisków
+Dodać funkcje procenty
